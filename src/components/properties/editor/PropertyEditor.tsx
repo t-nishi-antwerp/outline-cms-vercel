@@ -134,6 +134,7 @@ export function PropertyEditor({ propertyId, initialData }: PropertyEditorProps)
       window.removeEventListener("beforeunload", handleBeforeUnload);
       releaseLock();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [propertyId]);
 
   const handleSectionDragEnd = (event: DragEndEvent) => {

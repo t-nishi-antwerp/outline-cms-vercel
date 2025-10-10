@@ -1,5 +1,6 @@
 import { requireAuth } from "@/lib/auth-utils";
 import { Header } from "@/components/dashboard/Header";
+import Link from "next/link";
 
 export default async function DashboardPage() {
   const session = await requireAuth();
@@ -42,7 +43,7 @@ export default async function DashboardPage() {
                 クイックアクセス
               </h3>
               <div className="space-y-2">
-                <a
+                <Link
                   href="/dashboard/properties"
                   className="block px-4 py-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
                 >
@@ -64,7 +65,7 @@ export default async function DashboardPage() {
                       物件一覧
                     </span>
                   </div>
-                </a>
+                </Link>
               </div>
             </div>
           </div>
