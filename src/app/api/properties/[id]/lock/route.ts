@@ -2,16 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 
-const LOCK_DURATION_MINUTES = 10; // Ì√Øn	πP	
+const LOCK_DURATION_MINUTES = 10;
 
 /**
- * Ë∆Ì√Øn÷ó˚Ù∞
- * GET: Ì√Ø∂Kn∫ç
- * POST: Ì√Øn÷ó˚ˆw
- * DELETE: Ì√Øn„d
+ * Edit Lock API
+ * GET: Check lock status
+ * POST: Acquire/extend lock
+ * DELETE: Release lock
  */
 
-// GET /api/properties/[id]/lock - Ì√Ø∂Kí∫ç
+// GET /api/properties/[id]/lock - Check lock status
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -20,7 +20,7 @@ export async function GET(
     const session = await requireAuth();
     const { id: propertyId } = await params;
 
-    // ˛(nÌ√Øí∫ç
+    // Find existing lock
     const lock = await prisma.editLock.findUnique({
       where: { propertyId },
       include: {
@@ -38,17 +38,17 @@ export async function GET(
       return NextResponse.json({ locked: false });
     }
 
-    // Ì√Øn	πPí∫ç
+    // Check if lock has expired
     const now = new Date();
     if (lock.expiresAt < now) {
-      // PånÌ√ØíJd
+      // Delete expired lock
       await prisma.editLock.delete({
         where: { id: lock.id },
       });
       return NextResponse.json({ locked: false });
     }
 
-    // ÍLÌ√ØWfDã4
+    // Check if current user owns the lock
     if (lock.userId === session.user.id) {
       return NextResponse.json({
         locked: true,
@@ -57,7 +57,7 @@ export async function GET(
       });
     }
 
-    // ÷nÊ¸∂¸LÌ√ØWfDã4
+    // Lock is owned by another user
     return NextResponse.json({
       locked: true,
       ownedByCurrentUser: false,
@@ -70,13 +70,13 @@ export async function GET(
   } catch (error) {
     console.error("Lock check error:", error);
     return NextResponse.json(
-      { error: "Ì√Ø∂Kn∫çk1WW~W_" },
+      { error: "Failed to check lock status" },
       { status: 500 }
     );
   }
 }
 
-// POST /api/properties/[id]/lock - Ì√Øí÷ó˚ˆw
+// POST /api/properties/[id]/lock - Acquire or extend lock
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -87,36 +87,36 @@ export async function POST(
 
     const expiresAt = new Date(Date.now() + LOCK_DURATION_MINUTES * 60 * 1000);
 
-    // »ÈÛ∂Ø∑ÁÛÖgÊ
+    // Use transaction to ensure atomicity
     const result = await prisma.$transaction(async (tx) => {
-      // ‚XnÌ√Øí∫ç
+      // Check for existing lock
       const existingLock = await tx.editLock.findUnique({
         where: { propertyId },
       });
 
-      // Ì√ØLX(Yã4
+      // If lock exists
       if (existingLock) {
-        // På¡ß√Ø
+        // Check if expired
         const now = new Date();
         if (existingLock.expiresAt < now) {
-          // PåjngJdWf∞è\
+          // Delete expired lock and create new one
           await tx.editLock.delete({
             where: { id: existingLock.id },
           });
         } else if (existingLock.userId !== session.user.id) {
-          // ÷nÊ¸∂¸LÌ√Ø-
+          // Lock is held by another user
           const lockOwner = await tx.user.findUnique({
             where: { id: existingLock.userId },
             select: { name: true, email: true },
           });
 
           throw new Error(
-            `Sniˆo${lockOwner?.name}UìLË∆-gY${existingLock.expiresAt.toLocaleString("ja-JP")}~g	`
+            `This property is being edited by ${lockOwner?.name}. Lock expires at ${existingLock.expiresAt.toLocaleString("ja-JP")}`
           );
         }
       }
 
-      // Ì√Øí\~_oÙ∞
+      // Create or update lock
       const lock = await tx.editLock.upsert({
         where: { propertyId },
         create: {
@@ -135,12 +135,12 @@ export async function POST(
     return NextResponse.json({
       success: true,
       expiresAt: result.expiresAt,
-      message: "Ë∆Ì√Øí÷óW~W_",
+      message: "Lock acquired successfully",
     });
   } catch (error) {
     console.error("Lock acquisition error:", error);
 
-    if (error instanceof Error && error.message.includes("LË∆-gY")) {
+    if (error instanceof Error && error.message.includes("being edited")) {
       return NextResponse.json(
         { error: error.message },
         { status: 409 } // Conflict
@@ -148,13 +148,13 @@ export async function POST(
     }
 
     return NextResponse.json(
-      { error: "Ì√Øn÷ók1WW~W_" },
+      { error: "Failed to acquire lock" },
       { status: 500 }
     );
   }
 }
 
-// DELETE /api/properties/[id]/lock - Ì√Øí„d
+// DELETE /api/properties/[id]/lock - Release lock
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -163,7 +163,7 @@ export async function DELETE(
     const session = await requireAuth();
     const { id: propertyId } = await params;
 
-    // ÍnÌ√ØnJdÔ˝
+    // Delete only locks owned by current user
     const deleted = await prisma.editLock.deleteMany({
       where: {
         propertyId,
@@ -173,19 +173,19 @@ export async function DELETE(
 
     if (deleted.count === 0) {
       return NextResponse.json(
-        { error: "JdYãÌ√ØLãdKä~[ì" },
+        { error: "No lock found to delete" },
         { status: 404 }
       );
     }
 
     return NextResponse.json({
       success: true,
-      message: "Ë∆Ì√Øí„dW~W_",
+      message: "Lock released successfully",
     });
   } catch (error) {
     console.error("Lock release error:", error);
     return NextResponse.json(
-      { error: "Ì√Øn„dk1WW~W_" },
+      { error: "Failed to release lock" },
       { status: 500 }
     );
   }
