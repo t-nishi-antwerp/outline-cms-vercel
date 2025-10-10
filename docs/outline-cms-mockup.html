@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>物件概要CMS - 管理画面</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    </style>
+</head>
+<body>
+    <!-- ログイン画面 -->
+    <div id="loginScreen" style="display: none;" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md mx-4">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">物件概要CMS</h1>
+                <p class="text-gray-600">管理画面ログイン</p>
+            </div>
+            <form onsubmit="event.preventDefault(); showScreen('emailScreen');">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">メールアドレス</label>
+                    <input type="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">パスワード</label>
+                    <input type="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-semibold">
+                    ログイン
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- メール認証画面 -->
+    <div id="emailScreen" style="display: none;" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md mx-4">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">メール認証</h2>
+                <p class="text-gray-600 text-sm">6桁の認証コードを入力してください</p>
+            </div>
+            <form onsubmit="event.preventDefault(); showScreen('propertyListScreen');">
+                <div class="mb-6 flex justify-center gap-2">
+                    <input type="text" maxlength="1" class="w-12 h-14 text-center text-2xl border-2 border-gray-300 rounded-lg">
+                    <input type="text" maxlength="1" class="w-12 h-14 text-center text-2xl border-2 border-gray-300 rounded-lg">
+                    <input type="text" maxlength="1" class="w-12 h-14 text-center text-2xl border-2 border-gray-300 rounded-lg">
+                    <input type="text" maxlength="1" class="w-12 h-14 text-center text-2xl border-2 border-gray-300 rounded-lg">
+                    <input type="text" maxlength="1" class="w-12 h-14 text-center text-2xl border-2 border-gray-300 rounded-lg">
+                    <input type="text" maxlength="1" class="w-12 h-14 text-center text-2xl border-2 border-gray-300 rounded-lg">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-semibold">
+                    認証する
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 物件一覧画面 -->
+    <div id="propertyListScreen" style="display: flex; height: 100vh; width: 100vw; flex-direction: column;">
+        <!-- ヘッダー -->
+        <div style="background: white; border-bottom: 1px solid #e5e7eb; padding: 16px 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h1 style="font-size: 24px; font-weight: bold;">物件一覧</h1>
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 40px; height: 40px; background: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <span style="color: white; font-weight: bold;">U</span>
+                        </div>
+                        <div>
+                            <p style="font-size: 14px; font-weight: 600;">山田太郎</p>
+                            <p style="font-size: 12px; color: #6b7280;">管理者</p>
+                        </div>
+                    </div>
+                    <button onclick="showScreen('loginScreen')" style="padding: 8px 16px; background: #f3f4f6; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">
+                        ログアウト
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- メインコンテンツ -->
+        <div style="flex: 1; overflow-y: auto; padding: 24px; background: #f9fafb;">
+            <div style="max-width: 1400px; margin: 0 auto;">
+                <!-- 検索バーと新規作成ボタン -->
+                <div style="display: flex; gap: 16px; margin-bottom: 24px;">
+                    <div style="flex: 1; position: relative;">
+                        <input type="text" placeholder="物件を検索..." style="width: 100%; padding: 12px 16px 12px 44px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+                        <svg style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <button onclick="showCreatePropertyModal()" style="padding: 12px 24px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap;">
+                        + 新規物件作成
+                    </button>
+                </div>
+
+                <!-- 物件カードグリッド -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px;">
+                    <!-- 物件カード1 -->
+                    <div onclick="selectProperty('ofuna')" style="background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; cursor: pointer; transition: transform 0.2s;">
+                        <div style="height: 160px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
+                            <svg style="width: 64px; height: 64px; color: white; opacity: 0.8;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                        </div>
+                        <div style="padding: 20px;">
+                            <h3 style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">プレディア大船ヒルトップ</h3>
+                            <p style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">識別子: ofuna</p>
+                            <p style="font-size: 12px; color: #6b7280; margin-bottom: 12px;">最終更新: 2025年10月8日 14:30</p>
+                            <div style="display: flex; gap: 8px;">
+                                <span style="padding: 4px 8px; background: #dbeafe; color: #1e40af; font-size: 12px; border-radius: 4px;">公開中</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 物件カード2 -->
+                    <div onclick="selectProperty('yokohama')" style="background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; cursor: pointer; transition: transform 0.2s;">
+                        <div style="height: 160px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center;">
+                            <svg style="width: 64px; height: 64px; color: white; opacity: 0.8;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                        </div>
+                        <div style="padding: 20px;">
+                            <h3 style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">プレディア横浜タワー</h3>
+                            <p style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">識別子: yokohama</p>
+                            <p style="font-size: 12px; color: #6b7280; margin-bottom: 12px;">最終更新: 2025年10月5日 10:15</p>
+                            <div style="display: flex; gap: 8px;">
+                                <span style="padding: 4px 8px; background: #fef3c7; color: #92400e; font-size: 12px; border-radius: 4px;">下書き</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 物件カード3 -->
+                    <div onclick="selectProperty('kawasaki')" style="background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; cursor: pointer; transition: transform 0.2s;">
+                        <div style="height: 160px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); display: flex; align-items: center; justify-content: center;">
+                            <svg style="width: 64px; height: 64px; color: white; opacity: 0.8;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                        </div>
+                        <div style="padding: 20px;">
+                            <h3 style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">プレディア川崎レジデンス</h3>
+                            <p style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">識別子: kawasaki</p>
+                            <p style="font-size: 12px; color: #6b7280; margin-bottom: 12px;">最終更新: 2025年10月3日 16:45</p>
+                            <div style="display: flex; gap: 8px;">
+                                <span style="padding: 4px 8px; background: #dbeafe; color: #1e40af; font-size: 12px; border-radius: 4px;">公開中</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 物件編集画面 -->
+    <div id="propertyEditScreen" style="display: none; height: 100vh; width: 100vw;">
+        <div style="display: flex; height: 100%;">
+            <!-- サイドバー -->
+            <div style="width: 256px; background: #1f2937; color: white; display: flex; flex-direction: column;">
+                <div style="padding: 24px; border-bottom: 1px solid #374151;">
+                    <button onclick="showScreen('propertyListScreen')" style="display: flex; align-items: center; gap: 8px; background: none; border: none; color: white; cursor: pointer; margin-bottom: 12px; font-size: 14px;">
+                        <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        <span>物件一覧に戻る</span>
+                    </button>
+                    <h1 style="font-size: 16px; font-weight: bold;" id="currentPropertyName">プレディア大船ヒルトップ</h1>
+                </div>
+                <nav style="flex: 1; padding: 16px; overflow-y: auto;">
+                    <button onclick="showEditTab('edit')" id="navEdit" style="width: 100%; text-align: left; display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 8px; background: #2563eb; margin-bottom: 8px; border: none; color: white; cursor: pointer;">
+                        <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                        <span>コンテンツ編集</span>
+                    </button>
+                    <button onclick="showEditTab('backup')" id="navBackup" style="width: 100%; text-align: left; display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 8px; background: transparent; margin-bottom: 8px; border: none; color: white; cursor: pointer;">
+                        <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+                        </svg>
+                        <span>バックアップ管理</span>
+                    </button>
+                    <button onclick="showEditTab('history')" id="navHistory" style="width: 100%; text-align: left; display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 8px; background: transparent; margin-bottom: 8px; border: none; color: white; cursor: pointer;">
+                        <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>変更履歴</span>
+                    </button>
+                    <button onclick="showEditTab('settings')" id="navSettings" style="width: 100%; text-align: left; display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 8px; background: transparent; margin-bottom: 8px; border: none; color: white; cursor: pointer;">
+                        <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        <span>物件設定</span>
+                    </button>
+                </nav>
+                <div style="padding: 16px; border-top: 1px solid #374151;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                        <div style="width: 40px; height: 40px; background: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <span style="font-size: 14px; font-weight: bold;">U</span>
+                        </div>
+                        <div style="flex: 1;">
+                            <p style="font-size: 14px; font-weight: 600;">山田太郎</p>
+                            <p style="font-size: 12px; color: #9ca3af;">管理者</p>
+                        </div>
+                    </div>
+                    <button onclick="showScreen('loginScreen')" style="width: 100%; text-align: left; padding: 8px 16px; border-radius: 8px; background: transparent; border: none; color: white; cursor: pointer; font-size: 14px;">
+                        ログアウト
+                    </button>
+                </div>
+            </div>
+
+            <!-- メインコンテンツ -->
+            <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+                <!-- ヘッダー -->
+                <div style="background: white; border-bottom: 1px solid #e5e7eb; padding: 16px 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2 id="pageTitle" style="font-size: 24px; font-weight: bold;">コンテンツ編集</h2>
+                        <div style="font-size: 14px; color: #6b7280;">最終保存: 2025年10月8日 14:30</div>
+                    </div>
+                </div>
+
+                <!-- コンテンツエリア -->
+                <div style="flex: 1; display: flex; overflow: hidden;">
+                    <!-- 編集タブ -->
+                    <div id="editTab" style="display: flex; flex: 1;">
+                        <!-- 編集エリア（既存と同じ）-->
+                        <div style="flex: 1; overflow-y: auto; padding: 24px; background: #f9fafb;">
+                            <div style="max-width: 1024px; margin: 0 auto;">
+                                <!-- 全体概要セクション -->
+                                <div style="background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px;">
+                                    <div style="background: #f3f4f6; padding: 16px 24px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 12px;">
+                                        <svg style="width: 20px; height: 20px; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                                        </svg>
+                                        <h3 style="font-size: 18px; font-weight: bold;">全体概要</h3>
+                                        <span style="font-size: 12px; background: #dbeafe; color: #1e40af; padding: 4px 8px; border-radius: 4px;">固定</span>
+                                    </div>
+                                    <div style="padding: 24px;">
+                                        <div style="display: flex; gap: 12px; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 12px;">
+                                            <svg style="width: 20px; height: 20px; color: #9ca3af; cursor: move;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+                                            </svg>
+                                            <div style="flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                                <input type="text" value="名称" style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px;">
+                                                <input type="text" value="プレディア大船ヒルトップ" style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px;">
+                                            </div>
+                                            <button style="padding: 8px; color: #9ca3af; border: none; background: none; cursor: pointer;">
+                                                <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <button style="width: 100%; padding: 8px; border: 2px dashed #d1d5db; border-radius: 8px; background: none; color: #6b7280; cursor: pointer;">
+                                            + 項目を追加
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- 可変セクション2（情報更新日） -->
+                                <div style="background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px;">
+                                    <div style="background: #f3f4f6; padding: 16px 24px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-between;">
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <svg style="width: 20px; height: 20px; color: #9ca3af; cursor: move;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+                                            </svg>
+                                            <input type="text" value="情報更新日" style="font-size: 18px; font-weight: bold; background: transparent; border: none; border-bottom: 1px solid transparent; padding: 4px 8px;">
+                                            <span style="font-size: 12px; background: #d1fae5; color: #065f46; padding: 4px 8px; border-radius: 4px;">可変</span>
+                                            <span style="font-size: 11px; background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 4px;">デフォルト</span>
+                                        </div>
+                                        <button style="padding: 8px; color: #9ca3af; border: none; background: none; cursor: pointer;">
+                                            <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div style="padding: 24px;">
+                                        <div style="display: flex; gap: 12px; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 12px;">
+                                            <svg style="width: 20px; height: 20px; color: #9ca3af; cursor: move;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+                                            </svg>
+                                            <div style="flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                                <input type="text" value="情報更新日" style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px;">
+                                                <input type="date" value="2025-10-02" style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px;">
+                                            </div>
+                                            <button style="padding: 8px; color: #9ca3af; border: none; background: none; cursor: pointer;">
+                                                <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <button style="width: 100%; padding: 8px; border: 2px dashed #d1d5db; border-radius: 8px; background: none; color: #6b7280; cursor: pointer;">
+                                            + 項目を追加
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- セクション追加ボタン -->
+                                <button onclick="showAddSectionModal()" style="width: 100%; padding: 16px; border: 2px dashed #2563eb; border-radius: 8px; background: #eff6ff; color: #2563eb; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    新しいセクション（テーブル）を追加
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- プレビューエリア -->
+                        <div style="width: 384px; background: white; border-left: 1px solid #e5e7eb; display: flex; flex-direction: column;">
+                            <div style="padding: 16px; border-bottom: 1px solid #e5e7eb;">
+                                <h3 style="font-weight: bold;">プレビュー</h3>
+                            </div>
+                            <div style="flex: 1; overflow-y: auto; padding: 16px; font-size: 14px;">
+                                <div style="margin-bottom: 24px;">
+                                    <h4 style="font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #d1d5db;">全体概要</h4>
+                                    <div style="display: flex; border-bottom: 1px solid #e5e7eb; padding: 8px 0;">
+                                        <dt style="width: 33%; font-weight: 600;">名称</dt>
+                                        <dd style="flex: 1;">プレディア大船ヒルトップ</dd>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 物件設定タブ -->
+                    <div id="settingsTab" style="display: none; flex: 1; overflow-y: auto; padding: 24px; background: #f9fafb;">
+                        <div style="max-width: 800px; margin: 0 auto;">
+                            <h3 style="font-size: 20px; font-weight: bold; margin-bottom: 24px;">物件設定</h3>
+                            
+                            <!-- 基本情報 -->
+                            <div style="background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 24px; margin-bottom: 24px;">
+                                <h4 style="font-size: 16px; font-weight: bold; margin-bottom: 16px;">基本情報</h4>
+                                <div style="margin-bottom: 16px;">
+                                    <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">物件名</label>
+                                    <input type="text" value="プレディア大船ヒルトップ" style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px;">
+                                </div>
+                                <div style="margin-bottom: 16px;">
+                                    <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">識別子（URL用）</label>
+                                    <input type="text" value="ofuna" style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px;">
+                                </div>
+                                <div style="margin-bottom: 16px;">
+                                    <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">本番サイトURL</label>
+                                    <input type="url" value="https://www.predear.jp/pj/ofuna/outline/" style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px;">
+                                </div>
+                                <button style="padding: 8px 24px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                    保存
+                                </button>
+                            </div>
+
+                            <!-- アクセス権限 -->
+                            <div style="background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 24px; margin-bottom: 24px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                    <h4 style="font-size: 16px; font-weight: bold;">アクセス権限</h4>
+                                    <button style="padding: 8px 16px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">
+                                        + ユーザーを追加
+                                    </button>
+                                </div>
+                                <div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+                                    <div style="display: flex; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #e5e7eb;">
+                                        <div>
+                                            <p style="font-weight: 600; font-size: 14px;">山田太郎</p>
+                                            <p style="font-size: 12px; color: #6b7280;">yamada@example.com</p>
+                                        </div>
+                                        <button style="padding: 4px 12px; color: #dc2626; background: none; border: none; cursor: pointer; font-size: 14px;">削除</button>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; padding: 12px 16px;">
+                                        <div>
+                                            <p style="font-weight: 600; font-size: 14px;">佐藤花子</p>
+                                            <p style="font-size: 12px; color: #6b7280;">sato@example.com</p>
+                                        </div>
+                                        <button style="padding: 4px 12px; color: #dc2626; background: none; border: none; cursor: pointer; font-size: 14px;">削除</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 危険な操作 -->
+                            <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 24px;">
+                                <h4 style="font-size: 16px; font-weight: bold; color: #dc2626; margin-bottom: 16px;">危険な操作</h4>
+                                <p style="font-size: 14px; color: #991b1b; margin-bottom: 16px;">この物件を削除すると、全てのデータが完全に削除されます。この操作は取り消せません。</p>
+                                <button onclick="if(confirm('本当にこの物件を削除しますか？この操作は取り消せません。')) alert('物件を削除しました')" style="padding: 8px 24px; background: #dc2626; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                    物件を削除
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- バックアップタブ -->
+                    <div id="backupTab" style="display: none; flex: 1; overflow-y: auto; padding: 24px; background: #f9fafb;">
+                        <div style="max-width: 1200px; margin: 0 auto;">
+                            <h3 style="font-size: 20px; font-weight: bold; margin-bottom: 24px;">バックアップ一覧</h3>
+                            <div style="background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead style="background: #f3f4f6; border-bottom: 1px solid #e5e7eb;">
+                                        <tr>
+                                            <th style="padding: 12px 24px; text-align: left; font-size: 14px; font-weight: 600;">バックアップ名</th>
+                                            <th style="padding: 12px 24px; text-align: left; font-size: 14px; font-weight: 600;">説明</th>
+                                            <th style="padding: 12px 24px; text-align: left; font-size: 14px; font-weight: 600;">作成者</th>
+                                            <th style="padding: 12px 24px; text-align: left; font-size: 14px; font-weight: 600;">作成日時</th>
+                                            <th style="padding: 12px 24px; text-align: center; font-size: 14px; font-weight: 600;">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                                            <td style="padding: 16px 24px; font-size: 14px; font-weight: 500;">2025年10月版</td>
+                                            <td style="padding: 16px 24px; font-size: 14px; color: #6b7280;">公開前の最終版</td>
+                                            <td style="padding: 16px 24px; font-size: 14px; color: #6b7280;">山田太郎</td>
+                                            <td style="padding: 16px 24px; font-size: 14px; color: #6b7280;">2025/10/08 14:30</td>
+                                            <td style="padding: 16px 24px; text-align: center;">
+                                                <button style="padding: 4px 12px; font-size: 13px; color: #2563eb; background: none; border: none; cursor: pointer;">プレビュー</button>
+                                                <button onclick="if(confirm('このバックアップから復元しますか？')) alert('復元しました')" style="padding: 4px 12px; font-size: 13px; color: #059669; background: none; border: none; cursor: pointer;">復元</button>
+                                                <button onclick="showCopyBackupModal('2025年10月版')" style="padding: 4px 12px; font-size: 13px; color: #7c3aed; background: none; border: none; cursor: pointer;">コピー</button>
+                                                <button onclick="if(confirm('このバックアップを削除しますか？')) alert('削除しました')" style="padding: 4px 12px; font-size: 13px; color: #dc2626; background: none; border: none; cursor: pointer;">削除</button>
+                                            </td>
+                                        </tr>
+                                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                                            <td style="padding: 16px 24px; font-size: 14px; font-weight: 500;">価格改定前</td>
+                                            <td style="padding: 16px 24px; font-size: 14px; color: #6b7280;">第2期販売開始前のバックアップ</td>
+                                            <td style="padding: 16px 24px; font-size: 14px; color: #6b7280;">佐藤花子</td>
+                                            <td style="padding: 16px 24px; font-size: 14px; color: #6b7280;">2025/10/01 10:15</td>
+                                            <td style="padding: 16px 24px; text-align: center;">
+                                                <button style="padding: 4px 12px; font-size: 13px; color: #2563eb; background: none; border: none; cursor: pointer;">プレビュー</button>
+                                                <button onclick="if(confirm('このバックアップから復元しますか？')) alert('復元しました')" style="padding: 4px 12px; font-size: 13px; color: #059669; background: none; border: none; cursor: pointer;">復元</button>
+                                                <button onclick="showCopyBackupModal('価格改定前')" style="padding: 4px 12px; font-size: 13px; color: #7c3aed; background: none; border: none; cursor: pointer;">コピー</button>
+                                                <button onclick="if(confirm('このバックアップを削除しますか？')) alert('削除しました')" style="padding: 4px 12px; font-size: 13px; color: #dc2626; background: none; border: none; cursor: pointer;">削除</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 16px 24px; font-size: 14px; font-weight: 500;">初期バージョン</td>
+                                            <td style="padding: 16px 24px; font-size: 14px; color: #6b7280;">物件公開時の初期データ</td>
+                                            <td style="padding: 16px 24px; font-size: 14px; color: #6b7280;">山田太郎</td>
+                                            <td style="padding: 16px 24px; font-size: 14px; color: #6b7280;">2025/09/15 09:00</td>
+                                            <td style="padding: 16px 24px; text-align: center;">
+                                                <button style="padding: 4px 12px; font-size: 13px; color: #2563eb; background: none; border: none; cursor: pointer;">プレビュー</button>
+                                                <button onclick="if(confirm('このバックアップから復元しますか？')) alert('復元しました')" style="padding: 4px 12px; font-size: 13px; color: #059669; background: none; border: none; cursor: pointer;">復元</button>
+                                                <button onclick="showCopyBackupModal('初期バージョン')" style="padding: 4px 12px; font-size: 13px; color: #7c3aed; background: none; border: none; cursor: pointer;">コピー</button>
+                                                <button onclick="if(confirm('このバックアップを削除しますか？')) alert('削除しました')" style="padding: 4px 12px; font-size: 13px; color: #dc2626; background: none; border: none; cursor: pointer;">削除</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="historyTab" style="display: none; flex: 1; overflow-y: auto; padding: 24px; background: #f9fafb;">
+                        <div style="max-width: 1200px; margin: 0 auto;">
+                            <h3 style="font-size: 20px; font-weight: bold; margin-bottom: 24px;">変更履歴</h3>
+                            <p style="color: #6b7280;">変更履歴（実装予定）</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- フッター -->
+                <div style="background: white; border-top: 1px solid #e5e7eb; padding: 16px 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; gap: 12px;">
+                            <button onclick="alert('下書きを保存しました')" style="padding: 8px 24px; background: #e5e7eb; color: #374151; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                下書き保存
+                            </button>
+                            <button onclick="alert('プレビューURL: https://cms.example.com/preview/ofuna/abc123')" style="padding: 8px 24px; background: #dbeafe; color: #1e40af; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                プレビューURL発行
+                            </button>
+                        </div>
+                        <button onclick="showPublishModal()" style="padding: 8px 32px; background: #059669; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                            公開
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 公開確認モーダル -->
+    <div id="publishModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 12px; box-shadow: 0 20px 25px rgba(0,0,0,0.15); width: 90%; max-width: 500px; padding: 24px;">
+            <h3 style="font-size: 20px; font-weight: bold; margin-bottom: 16px;">公開とバックアップ</h3>
+            <p style="font-size: 14px; color: #6b7280; margin-bottom: 20px;">公開前に自動的にバックアップを作成します。バックアップ名を入力してください。</p>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">バックアップ名 <span style="color: #dc2626;">*</span></label>
+                <input type="text" id="backupNameInput" placeholder="例: 2025年10月版" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">説明（オプション）</label>
+                <textarea id="backupDescInput" placeholder="バックアップの説明を入力..." style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; resize: vertical;" rows="3"></textarea>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button onclick="hidePublishModal()" style="flex: 1; padding: 10px; background: #f3f4f6; color: #374151; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                    キャンセル
+                </button>
+                <button onclick="executePublish()" style="flex: 1; padding: 10px; background: #059669; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                    バックアップして公開
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- セクション追加モーダル -->
+    <div id="addSectionModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 12px; box-shadow: 0 20px 25px rgba(0,0,0,0.15); width: 90%; max-width: 500px; padding: 24px;">
+            <h3 style="font-size: 20px; font-weight: bold; margin-bottom: 16px;">新しいセクション（テーブル）を追加</h3>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">セクション名 <span style="color: #dc2626;">*</span></label>
+                <input type="text" id="sectionNameInput" placeholder="例: 先着順概要" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button onclick="hideAddSectionModal()" style="flex: 1; padding: 10px; background: #f3f4f6; color: #374151; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                    キャンセル
+                </button>
+                <button onclick="addSection()" style="flex: 1; padding: 10px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                    追加
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- バックアップコピーモーダル -->
+    <div id="copyBackupModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 12px; box-shadow: 0 20px 25px rgba(0,0,0,0.15); width: 90%; max-width: 500px; padding: 24px;">
+            <h3 style="font-size: 20px; font-weight: bold; margin-bottom: 16px;">バックアップをコピー</h3>
+            <p style="font-size: 14px; color: #6b7280; margin-bottom: 16px;">「<span id="originalBackupName"></span>」のコピーを作成します。</p>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">新しいバックアップ名 <span style="color: #dc2626;">*</span></label>
+                <input type="text" id="copyBackupNameInput" placeholder="例: 2025年10月版（コピー）" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">説明（オプション）</label>
+                <textarea id="copyBackupDescInput" placeholder="コピーの説明を入力..." style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; resize: vertical;" rows="3"></textarea>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button onclick="hideCopyBackupModal()" style="flex: 1; padding: 10px; background: #f3f4f6; color: #374151; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                    キャンセル
+                </button>
+                <button onclick="executeCopyBackup()" style="flex: 1; padding: 10px; background: #7c3aed; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                    コピーを作成
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProperty = null;
+
+        function showScreen(screenId) {
+            const screens = ['loginScreen', 'emailScreen', 'propertyListScreen', 'propertyEditScreen'];
+            screens.forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+            
+            if (screenId === 'propertyEditScreen') {
+                document.getElementById(screenId).style.display = 'block';
+            } else if (screenId === 'propertyListScreen') {
+                document.getElementById(screenId).style.display = 'flex';
+            } else {
+                document.getElementById(screenId).style.display = 'flex';
+            }
+        }
+
+        function selectProperty(propertySlug) {
+            currentProperty = propertySlug;
+            const propertyNames = {
+                'ofuna': 'プレディア大船ヒルトップ',
+                'yokohama': 'プレディア横浜タワー',
+                'kawasaki': 'プレディア川崎レジデンス'
+            };
+            document.getElementById('currentPropertyName').textContent = propertyNames[propertySlug];
+            showScreen('propertyEditScreen');
+            showEditTab('edit');
+        }
+
+        function showEditTab(tab) {
+            const tabs = {edit: 'editTab', backup: 'backupTab', history: 'historyTab', settings: 'settingsTab'};
+            const navs = {edit: 'navEdit', backup: 'navBackup', history: 'navHistory', settings: 'navSettings'};
+            const titles = {edit: 'コンテンツ編集', backup: 'バックアップ管理', history: '変更履歴', settings: '物件設定'};
+            
+            Object.values(tabs).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+            Object.values(navs).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.background = 'transparent';
+            });
+            
+            const tabEl = document.getElementById(tabs[tab]);
+            if (tabEl) {
+                tabEl.style.display = tab === 'edit' ? 'flex' : 'block';
+            }
+            
+            const navEl = document.getElementById(navs[tab]);
+            if (navEl) navEl.style.background = '#2563eb';
+            
+            document.getElementById('pageTitle').textContent = titles[tab];
+        }
+
+        function showCreatePropertyModal() {
+            alert('新規物件作成モーダル（実装予定）');
+        }
+
+        function showPublishModal() {
+            document.getElementById('publishModal').style.display = 'flex';
+        }
+
+        function hidePublishModal() {
+            document.getElementById('publishModal').style.display = 'none';
+            document.getElementById('backupNameInput').value = '';
+            document.getElementById('backupDescInput').value = '';
+        }
+
+        function executePublish() {
+            const backupName = document.getElementById('backupNameInput').value;
+            if (!backupName.trim()) {
+                alert('バックアップ名を入力してください');
+                return;
+            }
+            hidePublishModal();
+            alert('バックアップ「' + backupName + '」を作成し、公開しました！');
+        }
+
+        function showAddSectionModal() {
+            document.getElementById('addSectionModal').style.display = 'flex';
+        }
+
+        function hideAddSectionModal() {
+            document.getElementById('addSectionModal').style.display = 'none';
+            document.getElementById('sectionNameInput').value = '';
+        }
+
+        function addSection() {
+            const sectionName = document.getElementById('sectionNameInput').value;
+            if (!sectionName.trim()) {
+                alert('セクション名を入力してください');
+                return;
+            }
+            hideAddSectionModal();
+            alert('新しいセクション「' + sectionName + '」を追加しました！');
+        }
+
+        function showCopyBackupModal(backupName) {
+            document.getElementById('originalBackupName').textContent = backupName;
+            document.getElementById('copyBackupNameInput').value = backupName + '（コピー）';
+            document.getElementById('copyBackupModal').style.display = 'flex';
+        }
+
+        function hideCopyBackupModal() {
+            document.getElementById('copyBackupModal').style.display = 'none';
+            document.getElementById('copyBackupNameInput').value = '';
+            document.getElementById('copyBackupDescInput').value = '';
+        }
+
+        function executeCopyBackup() {
+            const newBackupName = document.getElementById('copyBackupNameInput').value;
+            if (!newBackupName.trim()) {
+                alert('新しいバックアップ名を入力してください');
+                return;
+            }
+            hideCopyBackupModal();
+            alert('バックアップのコピー「' + newBackupName + '」を作成しました！');
+        }
+
+        // 初期表示
+        showScreen('propertyListScreen');
+    </script>
+</body>
+</html>

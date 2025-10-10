@@ -1,0 +1,200 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+// ユーザーテーブル
+model User {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String   @unique @db.VarChar(255)
+  name         String   @db.VarChar(100)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  role         Role
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // リレーション
+  propertyUsers   PropertyUser[]
+  propertyData    PropertyData[]
+  propertyBackups PropertyBackup[]
+  propertyHistory PropertyHistory[]
+  editLocks       EditLock[]
+  accounts        Account[]
+  sessions        Session[]
+
+  @@map("users")
+}
+
+// 物件テーブル
+model Property {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @db.VarChar(100)
+  slug        String   @unique @db.VarChar(100)
+  siteUrl     String?  @map("site_url") @db.VarChar(255)
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // リレーション
+  propertyUsers   PropertyUser[]
+  propertyData    PropertyData[]
+  propertyBackups PropertyBackup[]
+  propertyHistory PropertyHistory[]
+  previewTokens   PreviewToken[]
+  editLocks       EditLock[]
+
+  @@map("properties")
+}
+
+// 物件とユーザーの紐付けテーブル
+model PropertyUser {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  propertyId String   @map("property_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // リレーション
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, userId])
+  @@map("property_users")
+}
+
+// 物件データテーブル
+model PropertyData {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  propertyId  String   @map("property_id") @db.Uuid
+  version     String   @default("1.0") @db.VarChar(20)
+  data        Json     @db.JsonB
+  isPublished Boolean  @default(false) @map("is_published")
+  createdBy   String?  @map("created_by") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // リレーション
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  creator  User?    @relation(fields: [createdBy], references: [id])
+
+  @@map("property_data")
+}
+
+// バックアップテーブル
+model PropertyBackup {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  propertyId  String   @map("property_id") @db.Uuid
+  backupName  String   @map("backup_name") @db.VarChar(100)
+  description String?  @db.Text
+  data        Json     @db.JsonB
+  createdBy   String?  @map("created_by") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // リレーション
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  creator  User?    @relation(fields: [createdBy], references: [id])
+
+  @@map("property_backups")
+}
+
+// 変更履歴テーブル
+model PropertyHistory {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  propertyId String   @map("property_id") @db.Uuid
+  action     String   @db.VarChar(50)
+  summary    String?  @db.Text
+  dataBefore Json?    @map("data_before") @db.JsonB
+  dataAfter  Json?    @map("data_after") @db.JsonB
+  createdBy  String?  @map("created_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // リレーション
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  creator  User?    @relation(fields: [createdBy], references: [id])
+
+  @@map("property_history")
+}
+
+// プレビュートークンテーブル
+model PreviewToken {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  propertyId String   @map("property_id") @db.Uuid
+  token      String   @unique @db.VarChar(255)
+  data       Json     @db.JsonB
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // リレーション
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("preview_tokens")
+}
+
+// 編集ロックテーブル
+model EditLock {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  propertyId String   @map("property_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  lockedAt   DateTime @default(now()) @map("locked_at")
+  expiresAt  DateTime @map("expires_at")
+
+  // リレーション
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId])
+  @@map("edit_locks")
+}
+
+// NextAuth.js用のテーブル
+model Account {
+  id                String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String  @map("user_id") @db.Uuid
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refreshToken      String? @map("refresh_token") @db.Text
+  accessToken       String? @map("access_token") @db.Text
+  expiresAt         Int?    @map("expires_at")
+  tokenType         String? @map("token_type")
+  scope             String?
+  idToken           String? @map("id_token") @db.Text
+  sessionState      String? @map("session_state")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id") @db.Uuid
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// Enum定義
+enum Role {
+  admin
+  editor
+}

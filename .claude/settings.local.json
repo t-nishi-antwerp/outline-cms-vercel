@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install)",
+      "Bash(tree:*)",
+      "Bash(vercel:*)",
+      "Bash(npm run:*)",
+      "Bash(cat:*)",
+      "Bash(npm install:*)",
+      "Bash(pkill:*)",
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(openssl rand:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
