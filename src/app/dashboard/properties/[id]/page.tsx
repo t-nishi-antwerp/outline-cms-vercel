@@ -33,7 +33,7 @@ export default async function PropertyDetailPage({
     include: {
       propertyData: {
         orderBy: { createdAt: "desc" },
-        take: 1,
+        take: 2, // 最新2件取得（下書きと公開版）
       },
     },
   });
@@ -43,6 +43,11 @@ export default async function PropertyDetailPage({
   }
 
   const currentData = property.propertyData[0];
+
+  // 公開データが存在するか確認
+  const hasPublishedData = property.propertyData.some(
+    (data) => data.isPublished === true
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -89,6 +94,7 @@ export default async function PropertyDetailPage({
                 <PropertyEditor
                   propertyId={propertyId}
                   initialData={currentData.data as unknown as PropertyData}
+                  hasPublishedData={hasPublishedData}
                 />
               ) : (
                 <div className="text-center py-12 text-gray-500">

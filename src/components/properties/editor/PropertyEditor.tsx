@@ -28,12 +28,15 @@ import {
 interface PropertyEditorProps {
   propertyId: string;
   initialData: PropertyData;
+  hasPublishedData: boolean;
 }
 
-export function PropertyEditor({ propertyId, initialData }: PropertyEditorProps) {
+export function PropertyEditor({ propertyId, initialData, hasPublishedData }: PropertyEditorProps) {
   const [data, setData] = useState<PropertyData>(initialData);
   const [isSaving, setIsSaving] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [publishStatus, setPublishStatus] = useState<"idle" | "publishing" | "published" | "error">("idle");
   const [isAddingSection, setIsAddingSection] = useState(false);
   const [newSectionTitle, setNewSectionTitle] = useState("");
   const [autoSaveTimer, setAutoSaveTimer] = useState<NodeJS.Timeout | null>(null);
@@ -369,8 +372,80 @@ export function PropertyEditor({ propertyId, initialData }: PropertyEditorProps)
     }
   };
 
+  // 保存して公開
+  const handleSaveAndPublish = async () => {
+    setIsPublishing(true);
+    setPublishStatus("publishing");
+
+    try {
+      // 1. まず下書きを保存
+      const saveResponse = await fetch(`/api/properties/${propertyId}/data`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!saveResponse.ok) {
+        throw new Error("保存に失敗しました");
+      }
+
+      // 2. 保存した下書きを公開
+      const publishResponse = await fetch(`/api/properties/${propertyId}/publish`, {
+        method: "POST",
+      });
+
+      if (!publishResponse.ok) {
+        throw new Error("公開に失敗しました");
+      }
+
+      setPublishStatus("published");
+      setTimeout(() => {
+        setPublishStatus("idle");
+        // ページをリロードして最新の公開状態を反映
+        window.location.reload();
+      }, 1500);
+    } catch (error) {
+      console.error("保存・公開エラー:", error);
+      setPublishStatus("error");
+      setTimeout(() => setPublishStatus("idle"), 3000);
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {/* 未公開の変更警告 */}
+      {!hasPublishedData && (
+        <div className="bg-orange-50 border-2 border-orange-400 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <svg
+              className="w-6 h-6 text-orange-600 flex-shrink-0 mt-0.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+            <div className="flex-1">
+              <h3 className="font-semibold text-orange-900 mb-1">
+                変更内容が本番サイトに反映されていません
+              </h3>
+              <p className="text-sm text-orange-800">
+                編集内容は下書きとして保存されています。本番サイト（JSONP API）に反映するには、右の「保存して公開」ボタンをクリックしてください。
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ロック警告 */}
       {isLocked && lockInfo && (
         <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4">
@@ -445,9 +520,16 @@ export function PropertyEditor({ propertyId, initialData }: PropertyEditorProps)
             <button
               onClick={handleSaveDraft}
               disabled={isSaving || isLocked}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 transition-colors"
             >
               {isSaving ? "保存中..." : "下書き保存"}
+            </button>
+            <button
+              onClick={handleSaveAndPublish}
+              disabled={isPublishing || isLocked}
+              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 transition-colors font-medium"
+            >
+              {isPublishing ? "公開中..." : "保存して公開"}
             </button>
             {saveStatus === "saved" && (
               <span className="text-sm text-green-600">✓ 保存しました</span>
@@ -455,9 +537,23 @@ export function PropertyEditor({ propertyId, initialData }: PropertyEditorProps)
             {saveStatus === "error" && (
               <span className="text-sm text-red-600">✗ 保存に失敗しました</span>
             )}
+            {publishStatus === "published" && (
+              <span className="text-sm text-green-600 font-medium">✓ 公開しました</span>
+            )}
+            {publishStatus === "error" && (
+              <span className="text-sm text-red-600">✗ 公開に失敗しました</span>
+            )}
           </div>
-          <div className="text-sm text-gray-500">
-            最終更新: {new Date(data.lastUpdated).toLocaleString("ja-JP")}
+          <div className="flex items-center gap-4">
+            {hasPublishedData && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-full">
+                <span className="w-2 h-2 bg-green-600 rounded-full"></span>
+                公開中
+              </span>
+            )}
+            <div className="text-sm text-gray-500">
+              最終更新: {new Date(data.lastUpdated).toLocaleString("ja-JP")}
+            </div>
           </div>
         </div>
       </div>

@@ -151,6 +151,34 @@ function handlePropertyData(response) {
           </div>
         </div>
 
+        {/* Test API Button */}
+        <div>
+          <a
+            href={jsonpUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+              />
+            </svg>
+            APIをテスト
+          </a>
+          <p className="text-xs text-gray-500 mt-1">
+            新しいタブでAPIレスポンスを確認できます
+          </p>
+        </div>
+
         {/* 使用例 */}
         <details className="mt-4" open>
           <summary className="cursor-pointer text-blue-600 hover:text-blue-700 font-medium">
@@ -195,6 +223,21 @@ function handlePropertyData(response) {
             </div>
           </div>
         </details>
+
+        <div className="bg-blue-50 border border-blue-200 rounded p-3 mt-4">
+          <p className="text-xs text-blue-900 font-medium mb-2">
+            動作しない場合のチェックポイント:
+          </p>
+          <ul className="text-xs text-blue-800 space-y-1 ml-4 list-disc">
+            <li>データを「公開」していますか？（下書きのままでは表示されません）</li>
+            <li>コールバック関数は &lt;script&gt; タグより前に定義されていますか？</li>
+            <li>ブラウザの開発者ツールでエラーを確認しましたか？</li>
+            <li>上の「APIをテスト」ボタンでデータが返ってきますか？</li>
+          </ul>
+          <p className="text-xs text-blue-800 mt-2">
+            詳しくは <code className="bg-blue-100 px-1 rounded">TROUBLESHOOTING_JSONP.md</code> をご覧ください。
+          </p>
+        </div>
 
         <div className="bg-yellow-50 border border-yellow-200 rounded p-3 mt-4">
           <p className="text-xs text-yellow-800">
