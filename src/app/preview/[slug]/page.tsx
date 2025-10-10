@@ -73,7 +73,7 @@ export default async function PreviewPage({
     notFound();
   }
 
-  const propertyData = draftData.data as PropertyData;
+  const propertyData = draftData.data as unknown as PropertyData;
 
   return (
     <div className="min-h-screen bg-gray-50">
