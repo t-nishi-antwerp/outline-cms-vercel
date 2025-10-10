@@ -97,7 +97,7 @@ export async function POST(
         propertyId,
         action: "update",
         summary: "下書きを保存しました",
-        dataAfter: propertyData.data,
+        dataAfter: propertyData.data as any,
         createdBy: session.user.id,
       },
     });
