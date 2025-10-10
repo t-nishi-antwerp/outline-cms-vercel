@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface ApiInfoProps {
   slug: string;
@@ -9,8 +9,12 @@ interface ApiInfoProps {
 export function ApiInfo({ slug }: ApiInfoProps) {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<"simple" | "inline" | "css">("simple");
+  const [baseUrl, setBaseUrl] = useState("");
 
-  const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+  useEffect(() => {
+    setBaseUrl(window.location.origin);
+  }, []);
+
   const jsonUrl = `${baseUrl}/api/public/${slug}`;
   const jsonpUrl = `${baseUrl}/api/public/${slug}?callback=handlePropertyData`;
   const embedJsUrl = `${baseUrl}/api/public/${slug}/embed.js`;
