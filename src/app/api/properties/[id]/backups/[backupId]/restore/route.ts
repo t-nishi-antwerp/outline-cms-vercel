@@ -66,7 +66,7 @@ export async function POST(
         data: {
           propertyId,
           version: `r.${timestamp}`, // r.12345678 (11文字)
-          data: backup.data,
+          data: backup.data as any,
           isPublished: false, // 下書きとして作成
           createdBy: session.user.id,
         },
@@ -86,8 +86,8 @@ export async function POST(
           propertyId,
           action: "restore",
           summary: `バックアップから復元しました (${backup.backupName}) - 下書きとして作成`,
-          dataBefore: currentPublished?.data,
-          dataAfter: restoredData.data,
+          dataBefore: currentPublished?.data as any,
+          dataAfter: restoredData.data as any,
           createdBy: session.user.id,
         },
       });

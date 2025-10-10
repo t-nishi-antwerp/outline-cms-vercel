@@ -75,7 +75,7 @@ export async function POST(
       data: {
         propertyId,
         token,
-        data: latestDraft.data,
+        data: latestDraft.data as any,
         expiresAt,
       },
     });

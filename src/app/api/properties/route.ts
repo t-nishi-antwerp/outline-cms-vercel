@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
         propertyData: {
           create: {
             version: defaultData.version,
-            data: defaultData,
+            data: defaultData as any,
             isPublished: false,
             createdBy: session.user.id,
           },
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
           create: {
             action: "create",
             summary: "物件を作成しました",
-            dataAfter: defaultData,
+            dataAfter: defaultData as any,
             createdBy: session.user.id,
           },
         },

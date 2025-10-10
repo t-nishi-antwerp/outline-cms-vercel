@@ -64,7 +64,7 @@ export async function POST(
             propertyId,
             backupName: `公開前バックアップ ${new Date().toLocaleString("ja-JP")}`,
             description: "新しいバージョンを公開したため",
-            data: currentPublished.data,
+            data: currentPublished.data as any,
           },
         });
 
@@ -91,8 +91,8 @@ export async function POST(
           propertyId,
           action: "publish",
           summary: "コンテンツを公開しました",
-          dataBefore: currentPublished?.data,
-          dataAfter: publishedData.data,
+          dataBefore: currentPublished?.data as any,
+          dataAfter: publishedData.data as any,
           createdBy: session.user.id,
         },
       });
