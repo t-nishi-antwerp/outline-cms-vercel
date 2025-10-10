@@ -88,7 +88,7 @@ export default async function PropertyDetailPage({
               {currentData ? (
                 <PropertyEditor
                   propertyId={propertyId}
-                  initialData={currentData.data as PropertyData}
+                  initialData={currentData.data as unknown as PropertyData}
                 />
               ) : (
                 <div className="text-center py-12 text-gray-500">
