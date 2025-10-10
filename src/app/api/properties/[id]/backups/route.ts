@@ -98,7 +98,7 @@ export async function POST(
         propertyId,
         backupName: reason || `手動バックアップ ${new Date().toLocaleString("ja-JP")}`,
         description: reason || "手動バックアップ",
-        data: currentPublished.data,
+        data: currentPublished.data as any,
       },
     });
 
