@@ -8,11 +8,12 @@ interface ApiInfoProps {
 
 export function ApiInfo({ slug }: ApiInfoProps) {
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<"js" | "css">("js");
+  const [activeTab, setActiveTab] = useState<"simple" | "inline" | "css">("simple");
 
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
   const jsonUrl = `${baseUrl}/api/public/${slug}`;
   const jsonpUrl = `${baseUrl}/api/public/${slug}?callback=handlePropertyData`;
+  const embedJsUrl = `${baseUrl}/api/public/${slug}/embed.js`;
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -20,7 +21,13 @@ export function ApiInfo({ slug }: ApiInfoProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const exampleCode = `<!-- 本番サイトに埋め込むコード例 -->
+  // シンプルな埋め込みコード（外部JSファイル使用）
+  const simpleEmbedCode = `<!-- 最もシンプルな埋め込み方法 -->
+<div id="property-outline"></div>
+<script src="${embedJsUrl}"></script>`;
+
+  // インライン埋め込みコード（従来の方法）
+  const inlineEmbedCode = `<!-- 本番サイトに埋め込むコード例 -->
 <div id="property-outline"></div>
 
 <script>
@@ -61,6 +68,8 @@ function handlePropertyData(response) {
 }
 </script>
 <script src="${jsonpUrl}"></script>`;
+
+  const exampleCode = inlineEmbedCode; // 後方互換性のため
 
   const exampleCSS = `/* 物件概要データのスタイル例 */
 .property-section {
@@ -188,14 +197,29 @@ function handlePropertyData(response) {
             {/* タブ */}
             <div className="flex gap-1 bg-gray-100 p-1 rounded-lg mb-2">
               <button
-                onClick={() => setActiveTab("js")}
+                onClick={() => setActiveTab("simple")}
                 className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                  activeTab === "js"
+                  activeTab === "simple"
                     ? "bg-white text-blue-600 shadow-sm"
                     : "text-gray-600 hover:text-gray-900"
                 }`}
               >
-                JavaScript
+                <div className="flex items-center justify-center gap-1">
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  シンプル（推奨）
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab("inline")}
+                className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                  activeTab === "inline"
+                    ? "bg-white text-blue-600 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                インライン
               </button>
               <button
                 onClick={() => setActiveTab("css")}
@@ -212,15 +236,34 @@ function handlePropertyData(response) {
             {/* コード表示 */}
             <div className="relative">
               <pre className="text-xs bg-gray-900 text-gray-100 p-3 rounded overflow-x-auto max-h-96">
-                <code>{activeTab === "js" ? exampleCode : exampleCSS}</code>
+                <code>
+                  {activeTab === "simple" && simpleEmbedCode}
+                  {activeTab === "inline" && inlineEmbedCode}
+                  {activeTab === "css" && exampleCSS}
+                </code>
               </pre>
               <button
-                onClick={() => handleCopy(activeTab === "js" ? exampleCode : exampleCSS)}
+                onClick={() => {
+                  const code = activeTab === "simple" ? simpleEmbedCode : activeTab === "inline" ? inlineEmbedCode : exampleCSS;
+                  handleCopy(code);
+                }}
                 className="absolute top-2 right-2 px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded"
               >
                 {copied ? "✓" : "コピー"}
               </button>
             </div>
+
+            {/* 説明 */}
+            {activeTab === "simple" && (
+              <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-xs text-green-800">
+                <strong>✨ 推奨:</strong> たった2行で完結！JavaScriptの知識がなくても簡単に埋め込めます。
+              </div>
+            )}
+            {activeTab === "inline" && (
+              <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
+                <strong>ℹ️ インライン方式:</strong> コールバック関数をカスタマイズしたい場合はこちらを使用してください。
+              </div>
+            )}
           </div>
         </details>
 
