@@ -27,12 +27,11 @@ NEXTAUTH_SECRET=your-random-secret-key-here
 
 ### アプリケーション設定
 ```bash
-# デプロイ後のURLに変更
+# デプロイ後のURLに変更（プレビューURL生成に使用）
 NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
-
-# 本番サイトのURL
-NEXT_PUBLIC_SITE_URL=https://www.predear.jp
 ```
+
+**注意:** `NEXT_PUBLIC_SITE_URL` は不要です。各物件の本番サイトURLは、物件作成・編集時に個別に設定します。
 
 ## 2. Vercelプロジェクトの作成
 
