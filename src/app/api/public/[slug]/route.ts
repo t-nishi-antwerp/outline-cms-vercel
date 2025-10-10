@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+// Next.jsのキャッシュを無効化
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // GET /api/public/[slug] - 公開データをJSONPで取得
 export async function GET(
   request: NextRequest,
@@ -35,7 +39,7 @@ export async function GET(
           headers: {
             "Content-Type": "application/javascript",
             "Access-Control-Allow-Origin": "*",
-            "Cache-Control": "public, max-age=300, s-maxage=600",
+            "Cache-Control": "no-cache, no-store, must-revalidate",
           },
         });
       }
@@ -57,7 +61,7 @@ export async function GET(
           headers: {
             "Content-Type": "application/javascript",
             "Access-Control-Allow-Origin": "*",
-            "Cache-Control": "public, max-age=300, s-maxage=600",
+            "Cache-Control": "no-cache, no-store, must-revalidate",
           },
         });
       }
@@ -97,7 +101,7 @@ export async function GET(
           headers: {
             "Content-Type": "application/javascript",
             "Access-Control-Allow-Origin": "*",
-            "Cache-Control": "public, max-age=300, s-maxage=600",
+            "Cache-Control": "public, max-age=0, s-maxage=0, must-revalidate",
           },
         }
       );
@@ -108,7 +112,7 @@ export async function GET(
       status: 200,
       headers: {
         "Access-Control-Allow-Origin": "*",
-        "Cache-Control": "public, max-age=300, s-maxage=600",
+        "Cache-Control": "public, max-age=0, s-maxage=0, must-revalidate",
       },
     });
   } catch (error) {
