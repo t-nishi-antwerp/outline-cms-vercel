@@ -10,12 +10,13 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
-  const { searchParams } = new URL(request.url);
+  const requestUrl = new URL(request.url);
+  const { searchParams } = requestUrl;
   const containerId = searchParams.get("container") || "property-outline";
   const callback = searchParams.get("callback") || "handlePropertyData";
 
-  // APIのベースURL（本番環境のURL）
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "http://localhost:3000";
+  // APIのベースURL（リクエストのオリジンから取得）
+  const baseUrl = `${requestUrl.protocol}//${requestUrl.host}`;
   const apiUrl = `${baseUrl}/api/public/${slug}?callback=${callback}`;
 
   // slugを変数名として安全な形式に変換
@@ -77,13 +78,19 @@ export async function GET(
   // JSONPスクリプトを動的に読み込み
   var script = document.createElement('script');
   script.src = '${apiUrl}';
-  script.onerror = function() {
+  script.onerror = function(error) {
     console.error('物件データの読み込みに失敗しました');
+    console.error('API URL:', '${apiUrl}');
+    console.error('Error:', error);
     var container = document.getElementById('${containerId}');
     if (container) {
-      container.innerHTML = '<p style="color: red;">データの読み込みに失敗しました</p>';
+      container.innerHTML = '<p style="color: red;">データの読み込みに失敗しました</p><p style="color: gray; font-size: 12px;">API URL: ${apiUrl}</p>';
     }
   };
+
+  // デバッグ用
+  console.log('JSONP API URL:', '${apiUrl}');
+
   document.head.appendChild(script);
 })();`;
 

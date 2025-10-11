@@ -17,7 +17,8 @@
       "Bash(file:*)",
       "Bash(git push:*)",
       "Bash(gh auth:*)",
-      "Bash(gh repo create:*)"
+      "Bash(gh repo create:*)",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": []
