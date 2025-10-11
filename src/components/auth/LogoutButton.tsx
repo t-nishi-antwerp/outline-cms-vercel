@@ -2,14 +2,19 @@
 
 import { useState } from "react";
 import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export function LogoutButton() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const router = useRouter();
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
-      await signOut({ callbackUrl: "/", redirect: true });
+      // Use redirect: false and manually redirect after signOut completes
+      await signOut({ redirect: false });
+      // Force redirect to production URL
+      window.location.href = "/";
     } catch (error) {
       console.error("Logout error:", error);
       setIsLoggingOut(false);
