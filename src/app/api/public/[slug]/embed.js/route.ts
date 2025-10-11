@@ -18,13 +18,16 @@ export async function GET(
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "http://localhost:3000";
   const apiUrl = `${baseUrl}/api/public/${slug}?callback=${callback}`;
 
+  // slugを変数名として安全な形式に変換
+  const safeSlug = slug.replace(/[^a-zA-Z0-9]/g, '_');
+
   // 埋め込み用JavaScriptコード
   const embedScript = `(function() {
   // 既にスクリプトが読み込まれている場合は何もしない
-  if (window.__propertyOutlineLoaded_${slug}) {
+  if (window.__propertyOutlineLoaded_${safeSlug}) {
     return;
   }
-  window.__propertyOutlineLoaded_${slug} = true;
+  window.__propertyOutlineLoaded_${safeSlug} = true;
 
   // コールバック関数を定義
   window.${callback} = function(response) {
